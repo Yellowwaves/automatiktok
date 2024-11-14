@@ -93,7 +93,22 @@ try:
     print("test1")
     db_sg_id = db_sg_response['GroupId']
     print("test2")
-    ec2.authorize_security_group_ingress(GroupId=db_sg_id, IpProtocol='tcp', FromPort=3306, ToPort=3306, SourceSecurityGroupId=web_sg_id)
+    # Autoriser l'accès du groupe WebServerSG au groupe DBServerSG via le port 3306
+    ec2.authorize_security_group_ingress(
+        GroupId=db_sg_id,
+        IpPermissions=[
+            {
+                'IpProtocol': 'tcp',
+                'FromPort': 3306,
+                'ToPort': 3306,
+                'UserIdGroupPairs': [
+                    {
+                        'GroupId': web_sg_id
+                    }
+                ]
+            }
+        ]
+    )
     print(f"Groupe de sécurité pour serveur BDD créé avec ID : {db_sg_id}")
 
     # 8. Instances EC2
