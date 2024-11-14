@@ -1,11 +1,11 @@
+#cloud-boothook
 #!/bin/bash
-# Mettre à jour les paquets et installer Apache
-yum update -y
-yum install -y httpd
 
-# Démarrer le service Apache et activer le démarrage automatique
+yum update -y 
+yum install -y httpd.x86_64 
 systemctl start httpd
 systemctl enable httpd
+
 
 # Créer une page d'accueil simple
 echo "<html><body><h1>Bienvenue sur le serveur web Apache!</h1></body></html>" > /var/www/html/index.html

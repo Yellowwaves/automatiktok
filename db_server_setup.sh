@@ -1,5 +1,6 @@
+#cloud-boothook
 #!/bin/bash
-# Mettre à jour les paquets et installer MariaDB
+
 yum update -y
 yum install -y mariadb-server
 
