@@ -64,9 +64,16 @@ userdata_bdd = '''#!/bin/bash
 apt update
 apt install -y mariadb-server
 
+# Configurer MariaDB pour écouter sur toutes les interfaces
+sed -i 's/^bind-address.*=.*127.0.0.1/bind-address = 0.0.0.0/' /etc/mysql/mariadb.conf.d/50-server.cnf
+
 # Démarrer MariaDB et activer le démarrage automatique
 systemctl start mariadb
 systemctl enable mariadb
+
+# Vérifier que MariaDB écoute sur toutes les interfaces
+systemctl restart mariadb
+netstat -tuln | grep ':3306'
 
 # Création de la base de données, de l'utilisateur et de la table vulnérable
 mysql -u root <<EOF
@@ -159,6 +166,8 @@ try:
     private_route_table_id = private_route_table_response['RouteTable']['RouteTableId']
     ec2.create_route(RouteTableId=private_route_table_id, DestinationCidrBlock='0.0.0.0/0', NatGatewayId=nat_gw_id)
     ec2.associate_route_table(RouteTableId=private_route_table_id, SubnetId=private_subnet_id)
+    ec2.associate_route_table(RouteTableId=public_route_table_id, SubnetId=private_subnet_id)
+
     print("Table de routage privé créée et associée au sous-réseau privé")
 
     # 7. Groupes de sécurité
