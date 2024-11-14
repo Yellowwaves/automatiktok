@@ -158,7 +158,7 @@ try:
     # Création de l'instance EC2 pour le serveur Web
     web_instance_response = ec2.run_instances(
         ImageId=ami_id,
-        InstanceType='t2.micro',
+        InstanceType='t3.micro',
         KeyName=key_name,
         UserData=userdata_web,
         MinCount=1,
@@ -176,7 +176,7 @@ try:
     # Création de l'instance EC2 pour le serveur BDD
     db_instance_response = ec2.run_instances(
         ImageId=ami_id,
-        InstanceType='t2.micro',
+        InstanceType='t3.micro',
         KeyName=key_name,
         UserData=userdata_bdd,
         MinCount=1,
