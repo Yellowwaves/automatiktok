@@ -3,22 +3,28 @@ from botocore.exceptions import ClientError
 
 userdata_web = '''#!/bin/bash
 # Mise à jour et installation d'Apache
-apt update -y
-apt install -y httpd
+apt update -y 
 
-# Configuration d'Apache pour écouter sur toutes les interfaces
-sed -i 's/Listen 80/Listen 0.0.0.0:80/' /etc/httpd/conf/httpd.conf
+# Installer Apache
+apt install -y apache2 
+
+# Configurer Apache pour écouter sur toutes les interfaces
+sed -i 's/Listen 80/Listen 0.0.0.0:80/' /etc/apache2/ports.conf
 
 # Démarrer Apache
-systemctl start httpd
-systemctl enable httpd
+systemctl start apache2
+systemctl enable apache2
+
 
 # Créer une page d'accueil simple
 echo "<html><body><h1>Bienvenue sur votre serveur Apache!</h1></body></html>" > /var/www/html/index.html
 
-# Vérification du statut d'Apache
-systemctl restart httpd
-systemctl status httpd
+# Vérifier si Apache fonctionne
+systemctl restart apache2
+systemctl status apache2
+
+# Vérifier si le port 80 est bien ouvert
+netstat -tuln | grep ':80'
 '''
 userdata_bdd = '''#!/bin/bash
 # Mise à jour et installation de MariaDB

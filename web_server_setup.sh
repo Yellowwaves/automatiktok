@@ -4,14 +4,14 @@
 apt update -y 
 
 # Installer Apache
-apt install -y httpd.x86_64 
+apt install -y apache2 
 
 # Configurer Apache pour écouter sur toutes les interfaces
-sed -i 's/Listen 80/Listen 0.0.0.0:80/' /etc/httpd/conf/httpd.conf
+sed -i 's/Listen 80/Listen 0.0.0.0:80/' /etc/apache2/ports.conf
 
 # Démarrer Apache
-systemctl start httpd
-systemctl enable httpd
+systemctl start apache2
+systemctl enable apache2
 
 # Créer une page d'accueil avec un design plus joli
 echo "<!DOCTYPE html>
@@ -74,8 +74,8 @@ echo "<!DOCTYPE html>
 </html>" > /var/www/html/index.html
 
 # Vérifier si Apache fonctionne
-systemctl restart httpd
-systemctl status httpd
+systemctl restart apache2
+systemctl status apache2
 
 # Vérifier si le port 80 est bien ouvert
 netstat -tuln | grep ':80'

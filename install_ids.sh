@@ -7,6 +7,8 @@ sudo apt install -y libdnet-dev make unzip autoconf gcc g++ pkg-config
 sudo apt install -y autoconf
 sudo apt install -y g++
 sudo apt install -y unzip
+sudo apt install cmake -y
+
 
 
 # Install dependencies for Snort 3
