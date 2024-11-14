@@ -1,6 +1,42 @@
 import boto3
 from botocore.exceptions import ClientError
 
+userdata_web = '''#!/bin/bash
+# Mise à jour et installation d'Apache
+yum update -y
+yum install -y httpd
+
+# Configuration d'Apache pour écouter sur toutes les interfaces
+sed -i 's/Listen 80/Listen 0.0.0.0:80/' /etc/httpd/conf/httpd.conf
+
+# Démarrer Apache
+systemctl start httpd
+systemctl enable httpd
+
+# Créer une page d'accueil simple
+echo "<html><body><h1>Bienvenue sur votre serveur Apache!</h1></body></html>" > /var/www/html/index.html
+
+# Vérification du statut d'Apache
+systemctl restart httpd
+systemctl status httpd
+'''
+userdata_bdd = '''#!/bin/bash
+# Mise à jour et installation de MariaDB
+yum update -y
+yum install -y mariadb-server
+
+# Démarrer MariaDB et activer le démarrage automatique
+systemctl start mariadb
+systemctl enable mariadb
+
+# Création de la base de données et de l'utilisateur
+mysql -u root <<EOF
+CREATE DATABASE testdb;
+CREATE USER 'testuser'@'%' IDENTIFIED BY 'password';
+GRANT ALL PRIVILEGES ON testdb.* TO 'testuser'@'%';
+FLUSH PRIVILEGES;
+EOF
+'''
 def create_key_pair(ec2, key_name):
     try:
         ec2.describe_key_pairs(KeyNames=[key_name])
@@ -90,9 +126,7 @@ try:
 
     # Serveur BDD
     db_sg_response = ec2.create_security_group(GroupName='DBServerSG', Description="SG pour DB Server", VpcId=vpc_id)
-    print("test1")
     db_sg_id = db_sg_response['GroupId']
-    print("test2")
     # Autoriser l'accès du groupe WebServerSG au groupe DBServerSG via le port 3306
     ec2.authorize_security_group_ingress(
         GroupId=db_sg_id,
@@ -120,7 +154,7 @@ try:
         ImageId=ami_id,
         InstanceType='t2.micro',
         KeyName=key_name,
-        UserData='file://./web_server_setup.sh',
+        UserData=userdata_web,
         MinCount=1,
         MaxCount=1,
         NetworkInterfaces=[{
@@ -138,7 +172,7 @@ try:
         ImageId=ami_id,
         InstanceType='t2.micro',
         KeyName=key_name,
-        UserData='file://./db_server_setup.sh',
+        UserData=userdata_bdd,
         MinCount=1,
         MaxCount=1,
         NetworkInterfaces=[{
