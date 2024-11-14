@@ -95,6 +95,7 @@ INSERT INTO utilisateurs (nom, email) VALUES ('Charlie', 'charlie@example.com');
 EOF
 '''
 
+
 def create_key_pair(ec2, key_name):
     try:
         ec2.describe_key_pairs(KeyNames=[key_name])
@@ -166,42 +167,29 @@ try:
     private_route_table_id = private_route_table_response['RouteTable']['RouteTableId']
     ec2.create_route(RouteTableId=private_route_table_id, DestinationCidrBlock='0.0.0.0/0', NatGatewayId=nat_gw_id)
     ec2.associate_route_table(RouteTableId=private_route_table_id, SubnetId=private_subnet_id)
-    ec2.associate_route_table(RouteTableId=public_route_table_id, SubnetId=private_subnet_id)
-
     print("Table de routage privé créée et associée au sous-réseau privé")
 
     # 7. Groupes de sécurité
-    # Définit l'ID du VPC pour les groupes de sécurité
-    print (f"vpc id {vpc_id}")
     # Serveur Web
-    # Utilisation de vpc_id pour créer le groupe de sécurité dans le bon VPC
     web_sg_response = ec2.create_security_group(GroupName='WebServerSG', Description="SG pour Web Server", VpcId=vpc_id)
     web_sg_id = web_sg_response['GroupId']
 
     # Autoriser les règles de sécurité pour le serveur Web
     ec2.authorize_security_group_ingress(GroupId=web_sg_id, IpProtocol='tcp', FromPort=80, ToPort=80, CidrIp='0.0.0.0/0')
     ec2.authorize_security_group_ingress(GroupId=web_sg_id, IpProtocol='tcp', FromPort=22, ToPort=22, CidrIp='0.0.0.0/0')
-
     print(f"Groupe de sécurité pour serveur Web créé avec ID : {web_sg_id}")
 
     # Serveur BDD
     db_sg_response = ec2.create_security_group(GroupName='DBServerSG', Description="SG pour DB Server", VpcId=vpc_id)
     db_sg_id = db_sg_response['GroupId']
-    # Autoriser l'accès du groupe WebServerSG au groupe DBServerSG via le port 3306
     ec2.authorize_security_group_ingress(
         GroupId=db_sg_id,
-        IpPermissions=[
-            {
-                'IpProtocol': 'tcp',
-                'FromPort': 3306,
-                'ToPort': 3306,
-                'UserIdGroupPairs': [
-                    {
-                        'GroupId': web_sg_id
-                    }
-                ]
-            }
-        ]
+        IpPermissions=[{
+            'IpProtocol': 'tcp',
+            'FromPort': 3306,
+            'ToPort': 3306,
+            'UserIdGroupPairs': [{'GroupId': web_sg_id}]
+        }]
     )
     print(f"Groupe de sécurité pour serveur BDD créé avec ID : {db_sg_id}")
 
@@ -209,7 +197,6 @@ try:
     ami_id = "ami-0866a3c8686eaeeba"  # Remplacez par un ID d'AMI valide
 
     # Web server
-    # Création de l'instance EC2 pour le serveur Web
     web_instance_response = ec2.run_instances(
         ImageId=ami_id,
         InstanceType='t3.micro',
@@ -218,10 +205,10 @@ try:
         MinCount=1,
         MaxCount=1,
         NetworkInterfaces=[{
-            'AssociatePublicIpAddress': True,  # Association de l'adresse IP publique
-            'SubnetId': public_subnet_id,      # Sous-réseau à utiliser
+            'AssociatePublicIpAddress': True,
+            'SubnetId': public_subnet_id,
             'DeviceIndex': 0,
-            'Groups': [web_sg_id],  # Spécifier le groupe de sécurité ici
+            'Groups': [web_sg_id],
         }]
     )
     web_instance_id = web_instance_response['Instances'][0]['InstanceId']
@@ -236,9 +223,9 @@ try:
         MinCount=1,
         MaxCount=1,
         NetworkInterfaces=[{
-            'SubnetId': private_subnet_id,  # Sous-réseau privé pour la base de données
+            'SubnetId': private_subnet_id,
             'DeviceIndex': 0,
-            'Groups': [db_sg_id],  # Spécifier le groupe de sécurité ici
+            'Groups': [db_sg_id],
         }]
     )
     db_instance_id = db_instance_response['Instances'][0]['InstanceId']
