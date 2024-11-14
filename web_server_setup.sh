@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Mettre à jour le système
-yum update -y 
+apt update -y 
 
 # Installer Apache
-yum install -y httpd.x86_64 
+apt install -y httpd.x86_64 
 
 # Configurer Apache pour écouter sur toutes les interfaces
 sed -i 's/Listen 80/Listen 0.0.0.0:80/' /etc/httpd/conf/httpd.conf

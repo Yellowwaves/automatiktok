@@ -3,8 +3,8 @@ from botocore.exceptions import ClientError
 
 userdata_web = '''#!/bin/bash
 # Mise à jour et installation d'Apache
-yum update -y
-yum install -y httpd
+apt update -y
+apt install -y httpd
 
 # Configuration d'Apache pour écouter sur toutes les interfaces
 sed -i 's/Listen 80/Listen 0.0.0.0:80/' /etc/httpd/conf/httpd.conf
@@ -22,8 +22,8 @@ systemctl status httpd
 '''
 userdata_bdd = '''#!/bin/bash
 # Mise à jour et installation de MariaDB
-yum update -y
-yum install -y mariadb-server
+apt update -y
+apt install -y mariadb-server
 
 # Démarrer MariaDB et activer le démarrage automatique
 systemctl start mariadb

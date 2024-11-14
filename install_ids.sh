@@ -1,48 +1,47 @@
 #!/bin/bash
-# Script d'installation de Snort avec toutes les dépendances nécessaires sur une instance Amazon Linux 2
 
-# Mettre à jour le système
-sudo yum update -y
+# Update the package list
+sudo apt update -y
+sudo apt-get install libnet1
+sudo apt install -y libdnet-dev make unzip autoconf gcc g++ pkg-config
+sudo apt install -y autoconf
+sudo apt install -y g++
+sudo apt install -y unzip
 
-# Installer les outils de développement nécessaires
-sudo yum groupinstall -y "Development Tools"
-sudo yum install -y gcc-c++ flex bison zlib zlib-devel libpcap libpcap-devel pcre pcre-devel libdnet libdnet-devel tcpdump
 
-# Si libpcap n'est pas correctement installé, installer manuellement
-cd /tmp
-if ! ldconfig -p | grep -q libpcap; then
-    wget http://www.tcpdump.org/release/libpcap-1.9.1.tar.gz
-    tar -xzf libpcap-1.9.1.tar.gz
-    cd libpcap-1.9.1
-    ./configure
-    make
-    sudo make install
-    cd ..
-fi
+# Install dependencies for Snort 3
+sudo apt install -y build-essential libpcap-dev libpcre3-dev libnet1-dev zlib1g-dev luajit hwloc libdnet-dev libdumbnet-dev bison flex liblzma-dev openssl libssl-dev pkg-config libhwloc-dev cmake cpputest libsqlite3-dev uuid-dev libcmocka-dev libnetfilter-queue-dev libmnl-dev autotools-dev libluajit-5.1-dev libunwind-dev libfl-dev
 
-# Télécharger et installer Snort
-wget https://www.snort.org/downloads/snort/snort-2.9.20.tar.gz
-tar -xvzf snort-2.9.20.tar.gz
-cd snort-2.9.20
-./configure --enable-sourcefire --with-libpcap-libraries=/usr/local/lib --with-libpcap-includes=/usr/local/include --with-pcre-libraries=/usr/lib --with-pcre-includes=/usr/include
+# Create a directory to store source files
+mkdir -p ~/snort_src && cd ~/snort_src
+
+# Install Snort DAQ (Data Acquisition library) from source
+git clone https://github.com/snort3/libdaq.git
+cd libdaq
+./bootstrap
+./configure
 make
 sudo make install
 
-# Configurer les dossiers et les règles de Snort
-sudo mkdir -p /etc/snort/rules
-sudo mkdir -p /var/log/snort
-sudo mkdir -p /usr/local/lib/snort_dynamicrules
-sudo touch /etc/snort/rules/local.rules
-sudo touch /etc/snort/snort.conf
+# Download and install Google's Tcmalloc (optional but recommended)
+cd ../
+wget https://github.com/gperftools/gperftools/releases/download/gperftools-2.9.1/gperftools-2.9.1.tar.gz
+tar xzf gperftools-2.9.1.tar.gz
+cd gperftools-2.9.1/
+./configure
+make
+sudo make install
 
-# Ajouter une règle de détection d'injection SQL dans les règles locales
-echo 'alert tcp any any -> any 80 (msg:"SQL Injection attempt detected"; content:"union"; nocase; sid:1000001; rev:1;)' | sudo tee -a /etc/snort/rules/local.rules
+# Download and install Snort 3 from the source
+cd ../
+wget https://github.com/snort3/snort3/archive/refs/heads/master.zip
+unzip master.zip
+cd snort3-master
 
-# Configurer Snort pour inclure les règles locales
-echo 'include $RULE_PATH/local.rules' | sudo tee -a /etc/snort/snort.conf
+# Configure Snort 3 with Tcmalloc enabled
+./configure_cmake.sh --prefix=/usr/local --enable-tcmalloc
 
-# Changer les permissions du dossier de logs
-sudo chown -R $(whoami) /var/log/snort
+# Optional: list available features to enable extra capabilities (e.g., large PCAP support)
+# ./configure_cmake.sh --help
 
-# Vérifier que Snort est installé
-snort -V
+echo "Snort 3 installation and configuration completed successfully."

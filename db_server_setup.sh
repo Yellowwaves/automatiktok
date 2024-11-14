@@ -1,7 +1,7 @@
 #!/bin/bash
 
-yum update -y
-yum install -y mariadb-server
+apt update -y
+apt install -y mariadb-server
 
 # Démarrer le service MariaDB et activer le démarrage automatique
 systemctl start mariadb
