@@ -2,11 +2,9 @@ import boto3
 from botocore.exceptions import ClientError
 
 userdata_web = '''#!/bin/bash
-# Mise à jour et installation d'Apache
+# Mise à jour et installation d'Apache et PHP
 apt update
-
-# Installer Apache
-apt install -y apache2 
+apt install -y apache2 php php-mysql
 
 # Configurer Apache pour écouter sur toutes les interfaces
 sed -i 's/Listen 80/Listen 0.0.0.0:80/' /etc/apache2/ports.conf
@@ -15,9 +13,43 @@ sed -i 's/Listen 80/Listen 0.0.0.0:80/' /etc/apache2/ports.conf
 systemctl start apache2
 systemctl enable apache2
 
+# Créer une page PHP vulnérable aux injections SQL
+cat <<EOL > /var/www/html/index.php
+<?php
+\$servername = "localhost";
+\$username = "testuser";
+\$password = "password";
+\$dbname = "testdb";
 
-# Créer une page d'accueil simple
-echo "<html><body><h1>Bienvenue sur votre serveur Apache!</h1></body></html>" > /var/www/html/index.html
+// Créer une connexion à la base de données
+\$conn = new mysqli(\$servername, \$username, \$password, \$dbname);
+
+// Vérifier la connexion
+if (\$conn->connect_error) {
+    die("Connexion échouée: " . \$conn->connect_error);
+}
+
+// Vérification de la présence d'un paramètre de recherche
+if (isset(\$_GET['search'])) {
+    \$search = \$_GET['search'];
+    // Requête SQL vulnérable
+    \$sql = "SELECT * FROM utilisateurs WHERE nom LIKE '%\$search%'";
+    \$result = \$conn->query(\$sql);
+
+    if (\$result->num_rows > 0) {
+        while(\$row = \$result->fetch_assoc()) {
+            echo "Nom: " . \$row["nom"] . " - Email: " . \$row["email"] . "<br>";
+        }
+    } else {
+        echo "0 résultats trouvés.";
+    }
+} else {
+    echo "Entrez un terme de recherche dans l'URL, par exemple: ?search=nom";
+}
+
+\$conn->close();
+?>
+EOL
 
 # Vérifier si Apache fonctionne
 systemctl restart apache2
@@ -26,6 +58,7 @@ systemctl status apache2
 # Vérifier si le port 80 est bien ouvert
 netstat -tuln | grep ':80'
 '''
+
 userdata_bdd = '''#!/bin/bash
 # Mise à jour et installation de MariaDB
 apt update
@@ -35,14 +68,26 @@ apt install -y mariadb-server
 systemctl start mariadb
 systemctl enable mariadb
 
-# Création de la base de données et de l'utilisateur
+# Création de la base de données, de l'utilisateur et de la table vulnérable
 mysql -u root <<EOF
 CREATE DATABASE testdb;
 CREATE USER 'testuser'@'%' IDENTIFIED BY 'password';
 GRANT ALL PRIVILEGES ON testdb.* TO 'testuser'@'%';
 FLUSH PRIVILEGES;
+
+USE testdb;
+CREATE TABLE utilisateurs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nom VARCHAR(50) NOT NULL,
+    email VARCHAR(50) NOT NULL
+);
+
+INSERT INTO utilisateurs (nom, email) VALUES ('Alice', 'alice@example.com');
+INSERT INTO utilisateurs (nom, email) VALUES ('Bob', 'bob@example.com');
+INSERT INTO utilisateurs (nom, email) VALUES ('Charlie', 'charlie@example.com');
 EOF
 '''
+
 def create_key_pair(ec2, key_name):
     try:
         ec2.describe_key_pairs(KeyNames=[key_name])
