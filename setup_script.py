@@ -3,7 +3,7 @@ from botocore.exceptions import ClientError
 
 userdata_web = '''#!/bin/bash
 # Mise à jour et installation d'Apache
-apt update -y 
+apt update
 
 # Installer Apache
 apt install -y apache2 
@@ -28,7 +28,7 @@ netstat -tuln | grep ':80'
 '''
 userdata_bdd = '''#!/bin/bash
 # Mise à jour et installation de MariaDB
-apt update -y
+apt update
 apt install -y mariadb-server
 
 # Démarrer MariaDB et activer le démarrage automatique
