@@ -146,7 +146,7 @@ try:
     print(f"Groupe de sécurité pour serveur BDD créé avec ID : {db_sg_id}")
 
     # 8. Instances EC2
-    ami_id = "ami-007868005aea67c54"  # Remplacez par un ID d'AMI valide
+    ami_id = "ami-0866a3c8686eaeeba"  # Remplacez par un ID d'AMI valide
 
     # Web server
     # Création de l'instance EC2 pour le serveur Web
