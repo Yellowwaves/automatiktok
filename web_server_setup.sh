@@ -6,10 +6,6 @@ yum update -y
 # Installer Apache
 yum install -y httpd.x86_64 
 
-# Désactiver le pare-feu
-systemctl stop firewalld
-systemctl disable firewalld
-
 # Configurer Apache pour écouter sur toutes les interfaces
 sed -i 's/Listen 80/Listen 0.0.0.0:80/' /etc/httpd/conf/httpd.conf
 
@@ -71,7 +67,7 @@ echo "<!DOCTYPE html>
 <body>
     <div class='container'>
         <h1>Bienvenue sur votre serveur Apache!</h1>
-        <p>Le serveur fonctionne correctement. Vous êtes prêt à ajouter votre contenu!</p>
+        <p>Le serveur fonctionne correctement.</p>
         <a href='#' class='button'>Découvrir plus</a>
     </div>
 </body>
