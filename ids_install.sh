@@ -27,3 +27,4 @@ EOF
 sudo systemctl restart snort
  
 echo "Installation et configuration de Snort terminées."
+
