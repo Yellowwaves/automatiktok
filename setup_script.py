@@ -15,41 +15,111 @@ systemctl enable apache2
 
 # Créer une page PHP vulnérable aux injections SQL
 cat <<EOL > /var/www/html/index.php
-<?php
-\$servername = "localhost";
-\$username = "testuser";
-\$password = "password";
-\$dbname = "testdb";
-
-// Créer une connexion à la base de données
-\$conn = new mysqli(\$servername, \$username, \$password, \$dbname);
-
-// Vérifier la connexion
-if (\$conn->connect_error) {
-    die("Connexion échouée: " . \$conn->connect_error);
-}
-
-// Vérification de la présence d'un paramètre de recherche
-if (isset(\$_GET['search'])) {
-    \$search = \$_GET['search'];
-    // Requête SQL vulnérable
-    \$sql = "SELECT * FROM utilisateurs WHERE nom LIKE '%\$search%'";
-    \$result = \$conn->query(\$sql);
-
-    if (\$result->num_rows > 0) {
-        while(\$row = \$result->fetch_assoc()) {
-            echo "Nom: " . \$row["nom"] . " - Email: " . \$row["email"] . "<br>";
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recherche d'utilisateurs</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            text-align: center;
+            padding: 20px;
         }
-    } else {
-        echo "0 résultats trouvés.";
-    }
-} else {
-    echo "Entrez un terme de recherche dans l'URL, par exemple: ?search=nom";
-}
+        h1 {
+            color: #007bff;
+        }
+        .search-container {
+            margin: 20px auto;
+            max-width: 600px;
+        }
+        input[type="text"] {
+            padding: 10px;
+            font-size: 16px;
+            width: 70%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        input[type="submit"] {
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+        .results {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .result-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <h1>Recherche d'utilisateurs</h1>
+    <div class="search-container">
+        <form action="index.php" method="get">
+            <input type="text" name="search" placeholder="Recherchez un nom" required>
+            <input type="submit" value="Rechercher">
+        </form>
+    </div>
+    <div class="results">
+        <?php
+        \$servername = "localhost";
+        \$username = "testuser";
+        \$password = "password";
+        \$dbname = "testdb";
 
-\$conn->close();
-?>
+        // Créer une connexion à la base de données
+        \$conn = new mysqli(\$servername, \$username, \$password, \$dbname);
+
+        // Vérifier la connexion
+        if (\$conn->connect_error) {
+            die("Connexion échouée: " . \$conn->connect_error);
+        }
+
+        // Vérification de la présence d'un paramètre de recherche
+        if (isset(\$_GET['search'])) {
+            \$search = \$_GET['search'];
+            // Requête SQL vulnérable
+            \$sql = "SELECT * FROM utilisateurs WHERE nom LIKE '%\$search%'";
+            \$result = \$conn->query(\$sql);
+
+            if (\$result->num_rows > 0) {
+                while(\$row = \$result->fetch_assoc()) {
+                    echo "<div class='result-item'><strong>Nom:</strong> " . htmlspecialchars(\$row["nom"]) . " - <strong>Email:</strong> " . htmlspecialchars(\$row["email"]) . "</div>";
+                }
+            } else {
+                echo "<p>Aucun résultat trouvé.</p>";
+            }
+        } else {
+            echo "<p>Entrez un terme de recherche dans la barre ci-dessus.</p>";
+        }
+
+        \$conn->close();
+        ?>
+    </div>
+</body>
+</html>
 EOL
+
 
 # Vérifier si Apache fonctionne
 systemctl restart apache2

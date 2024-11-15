@@ -183,21 +183,28 @@ echo "Démarrage de l'application Flask..."
 cd $APP_DIR
 nohup python3 app.py &
 
-# Configurer Apache pour rediriger les requêtes vers Flask
-echo "Configuration d'Apache pour proxy vers Flask..."
+# Configurer Apache pour rediriger uniquement le chemin /flask vers Flask
+echo "Configuration d'Apache pour proxy vers Flask uniquement pour /flask..."
 cat <<EOF | sudo tee /etc/apache2/sites-available/000-default.conf
 <VirtualHost *:80>
     ServerName localhost
 
     ProxyPreserveHost On
-    ProxyPass / http://127.0.0.1:5000/
-    ProxyPassReverse / http://127.0.0.1:5000/
+    
+    # Redirection uniquement pour le sous-dossier Flask
+    ProxyPass /flask http://127.0.0.1:5000/
+    ProxyPassReverse /flask http://127.0.0.1:5000/
+
+    # Permettre à Apache de gérer les autres fichiers, y compris index.php
+    DocumentRoot /var/www/html
+    DirectoryIndex index.php index.html
+    <Directory /var/www/html>
+        AllowOverride All
+        Require all granted
+    </Directory>
 </VirtualHost>
 EOF
 
 # Redémarrer Apache pour appliquer la configuration
 echo "Redémarrage d'Apache..."
 sudo systemctl restart apache2
-
-# Message final
-echo "Installation terminée. L'application est maintenant accessible sur http://localhost"
