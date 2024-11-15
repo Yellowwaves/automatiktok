@@ -1,4 +1,5 @@
 # Utilisation des scripts
+Réalisé par Elouan Teissere, Alexandre Le Philippe, Hippolyte Requet, Alann Mortreuil
 
 Ce dossier contient plusieurs scripts Python et Bash. Voici leur utilisation :
 
