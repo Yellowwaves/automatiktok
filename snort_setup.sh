@@ -13,7 +13,7 @@ cat <<EOF | sudo tee /etc/snort/snort.conf
 include /etc/snort/rules/local.rules
 output alert_fast: /var/log/snort/alerts
 EOF
-
+ 
 # Création d'une règle pour détecter les injections SQL
 sudo mkdir -p /etc/snort/rules
 cat <<EOF | sudo tee /etc/snort/rules/local.rules
@@ -25,4 +25,3 @@ EOF
 sudo systemctl restart snort
  
 echo "Installation et configuration de Snort terminées."
-

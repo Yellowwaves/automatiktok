@@ -1,13 +1,11 @@
 #!/bin/bash
  
 # Mise à jour du système
-sudo apt update && sudo apt upgrade -y
+sudo apt update
  
 # Installation des dépendances
 sudo apt install -y snort tcpdump build-essential libpcap-dev libpcre3-dev zlib1g-dev
  
-# Installation de Snort
-sudo apt install -y snort
  
 # Configuration de Snort
 sudo mv /etc/snort/snort.conf /etc/snort/snort.conf.bak
@@ -32,7 +30,7 @@ echo "Installation et configuration de Snort terminées."
 
 # Mettre à jour les paquets
 echo "Mise à jour des paquets..."
-sudo apt update && sudo apt upgrade -y
+sudo apt update
 
 # Installer Apache
 echo "Installation d'Apache..."

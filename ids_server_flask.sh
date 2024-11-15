@@ -2,7 +2,7 @@
 
 # Mettre à jour les paquets
 echo "Mise à jour des paquets..."
-sudo apt update && sudo apt upgrade -y
+sudo apt update
 
 # Installer Apache
 echo "Installation d'Apache..."
