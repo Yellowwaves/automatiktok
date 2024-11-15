@@ -95,6 +95,10 @@ INSERT INTO utilisateurs (nom, email) VALUES ('Charlie', 'charlie@example.com');
 EOF
 '''
 
+def get_private_ip(ec2, instance_id):
+    response = ec2.describe_instances(InstanceIds=[instance_id])
+    return response['Reservations'][0]['Instances'][0]['PrivateIpAddress']
+
 
 def create_key_pair(ec2, key_name):
     try:
@@ -196,25 +200,7 @@ try:
     # 8. Instances EC2
     ami_id = "ami-0866a3c8686eaeeba"  # Remplacez par un ID d'AMI valide
 
-    # Web server
-    web_instance_response = ec2.run_instances(
-        ImageId=ami_id,
-        InstanceType='t3.micro',
-        KeyName=key_name,
-        UserData=userdata_web,
-        MinCount=1,
-        MaxCount=1,
-        NetworkInterfaces=[{
-            'AssociatePublicIpAddress': True,
-            'SubnetId': public_subnet_id,
-            'DeviceIndex': 0,
-            'Groups': [web_sg_id],
-        }]
-    )
-    web_instance_id = web_instance_response['Instances'][0]['InstanceId']
-    print(f"Instance de serveur Web lancée avec ID : {web_instance_id}")
-
-    # Création de l'instance EC2 pour le serveur BDD
+    # Lancement de l'instance de base de données
     db_instance_response = ec2.run_instances(
         ImageId=ami_id,
         InstanceType='t3.micro',
@@ -231,6 +217,32 @@ try:
     db_instance_id = db_instance_response['Instances'][0]['InstanceId']
     print(f"Instance de base de données lancée avec ID : {db_instance_id}")
 
-    print("VPC et infrastructure déployés avec succès.")
+    # Attendre que l'instance DB soit en cours d'exécution
+    ec2.get_waiter('instance_running').wait(InstanceIds=[db_instance_id])
+    db_private_ip = get_private_ip(ec2, db_instance_id)
+    print(f"Adresse IP privée du serveur BDD : {db_private_ip}")
+
+    # Modifier le script userdata du serveur web avec l'IP du serveur BDD
+    userdata_web_updated = userdata_web.replace("localhost", db_private_ip)
+
+    # Lancement de l'instance serveur web
+    web_instance_response = ec2.run_instances(
+        ImageId=ami_id,
+        InstanceType='t3.micro',
+        KeyName=key_name,
+        UserData=userdata_web_updated,
+        MinCount=1,
+        MaxCount=1,
+        NetworkInterfaces=[{
+            'AssociatePublicIpAddress': True,
+            'SubnetId': public_subnet_id,
+            'DeviceIndex': 0,
+            'Groups': [web_sg_id],
+        }]
+    )
+    web_instance_id = web_instance_response['Instances'][0]['InstanceId']
+    print(f"Instance de serveur Web lancée avec ID : {web_instance_id}")
+
+    print("Infrastructure déployée avec succès.")
 except ClientError as e:
     print(f"Une erreur est survenue : {e}")
