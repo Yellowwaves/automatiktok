@@ -6,6 +6,13 @@ userdata_web = '''#!/bin/bash
 apt update
 apt install -y apache2 php php-mysql
 
+# Démarrer et activer SSH
+systemctl start ssh
+systemctl enable ssh
+
+# Vérifier que le service SSH est actif
+systemctl status ssh
+
 # Configurer Apache pour écouter sur toutes les interfaces
 sed -i 's/Listen 80/Listen 0.0.0.0:80/' /etc/apache2/ports.conf
 

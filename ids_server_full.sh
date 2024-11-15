@@ -6,7 +6,6 @@ sudo apt update
 # Installation des dépendances
 sudo apt install -y snort tcpdump build-essential libpcap-dev libpcre3-dev zlib1g-dev
  
- 
 # Configuration de Snort
 sudo mv /etc/snort/snort.conf /etc/snort/snort.conf.bak
 cat <<EOF | sudo tee /etc/snort/snort.conf
