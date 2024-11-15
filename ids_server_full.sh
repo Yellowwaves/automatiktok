@@ -26,12 +26,6 @@ sudo systemctl restart snort
  
 echo "Installation et configuration de Snort terminées."
 
-#!/bin/bash
-
-# Mettre à jour les paquets
-echo "Mise à jour des paquets..."
-sudo apt update
-
 # Installer Apache
 echo "Installation d'Apache..."
 sudo apt install -y apache2
