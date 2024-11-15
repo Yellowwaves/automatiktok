@@ -57,12 +57,6 @@ systemctl status apache2
 
 # Vérifier si le port 80 est bien ouvert
 netstat -tuln | grep ':80'
-
-git clone https://github.com/Yellowwaves/aws_sql_http_config
-cd aws_sql_http_config
-
-chmod +x ids_server_full.sh
-./ids_server_full.sh
 '''
 
 userdata_bdd = '''#!/bin/bash
