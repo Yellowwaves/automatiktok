@@ -110,16 +110,56 @@ cat <<EOF > $APP_DIR/templates/alert.html
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interface Snort - Alertes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        h1 {
+            color: #007bff;
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .alerts {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        button {
+            padding: 10px 15px;
+            font-size: 14px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 <body>
     <h1>Interface de Monitoring Snort</h1>
     <div>
         <a href="/start">Démarrer Snort</a> |
         <a href="/stop">Arrêter Snort</a> |
-        <a href="/restart">Redémarrer Snort</a>
+        <a href="/restart">Redémarrer Snort</a> |
+        <a href="index.php?search=">Recherche</a> <!-- Lien vers index.php -->
+        <button onclick="window.location.reload();">Recharger</button> <!-- Bouton Reload -->
     </div>
     <h2>Alertes SQL Injection</h2>
-    <div style="background-color:#f4f4f4; padding:10px;">
+    <div class="alerts">
         {% if alerts %}
             <ul>
                 {% for alert in alerts %}
